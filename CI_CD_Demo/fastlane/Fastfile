@@ -73,13 +73,21 @@ platform :ios do
     )
 
     # Commit version Bump
-    commit_version_bump
+    commit_version_bump(
+      force: true
+    )
 
     # Add Git Tag
     add_git_tag(
       grouping: "fastlane-builds",
       prefix: "b",
       build_number: updated_build_number
+    )
+
+    # Git Push
+    push_to_git_remote(
+      force: true,
+      tags: true
     )
 
     # Publish Mac Notification
