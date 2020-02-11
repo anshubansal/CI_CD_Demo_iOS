@@ -36,11 +36,11 @@ This lane will upload build on AppCenter
 fastlane ios changelog_git
 ```
 Lane to get changelog from Git commits
-### ios increment_version
+### ios publish_on_teams
 ```
-fastlane ios increment_version
+fastlane ios publish_on_teams
 ```
-Lane to demo updating version number of project
+Lane to publish notification on MS Teams
 
 ----
 

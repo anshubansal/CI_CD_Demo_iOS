@@ -21,14 +21,19 @@ platform :ios do
   codesign_identity = "Apple Distribution: Gaurav Thakur (SYNZ9ZQLS2)" 
 
   # AppCenter Attributes
-  appcenter_key = "31aaffe1-2c5b-44e7-8541-d97f670596dc"
   appcenter_owner = "anshubansal-vwku"
   appcenter_app_name = "CI-CD-Demo"
   appcenter_api_token = "c4221d9ff4efc3ebfc467359af57a49d2185723e"
 
+  # Teams webhook URL
+  teams_webhook_url = "https://outlook.office.com/webhook/f6022cdd-331f-4073-977c-0be051526fec@36da45f1-dd2c-4d1f-af13-5abe46b99921/IncomingWebhook/54e278d40b1b4d2cb1f9587194ed55b4/8a621c5c-e7d1-40ab-be8a-cf0a5a1d8494"
+
   ## ====== ##
   desc "This lane build the application and publishes code on App Center"
   lane :beta do
+
+    # Publish Mac Notification
+    notification(subtitle: "Fastlane Job Started", message: "All Hail Build God!!")
 
     # Update build number
     updated_build_number = update_build_number
@@ -40,21 +45,45 @@ platform :ios do
     puts build_name
 
     # Build project adnd package IPA
-    build_app(
+    make_build(
       config: "Debug", 
       build_name: build_name
     )
 
-    # Pull changelog from 
-    last_tag = last_git_tag
-    changelog = ""
-    if last_tag != ""
-      changelog = changelog_from_git_commits(
-        between: [last_tag, "HEAD"]
-      )
-    else 
-      changelog = changelog_from_git_commits
-    end
+    # Publish Mac Notification
+    notification(subtitle: "Finished Building", message: "Uploading now...")
+
+    # Pull changelog from Git
+    changelog_git
+
+    # Distribute IPA on AppCenter
+    upload_build(
+      build_name: build_name,
+      changelog: lane_context[SharedValues::FL_CHANGELOG]
+    )
+
+    # Publish Mac Notification
+    notification(subtitle: "Finished Uploading", message: "House-keeping...")
+
+    # Notify teams about published build
+    publish_on_teams(
+      build_name: build_name,
+      build_number: updated_build_number,
+      date_time: current_time
+    )
+
+    # Commit version Bump
+    commit_version_bump
+
+    # Add Git Tag
+    add_git_tag(
+      grouping: "fastlane-builds",
+      prefix: "b",
+      build_number: updated_build_number
+    )
+
+    # Publish Mac Notification
+    notification(subtitle: "Fastlane Job Finished", message: "All Done!!")
 
   end
   ## ====== ##
@@ -83,7 +112,6 @@ platform :ios do
     )
 
     puts lane_context[SharedValues::IPA_OUTPUT_PATH]
-    puts lane_context[SharedValues::PKG_OUTPUT_PATH]
     puts lane_context[SharedValues::DSYM_OUTPUT_PATH]
     puts lane_context[SharedValues::XCODEBUILD_ARCHIVE]
   end
@@ -94,9 +122,9 @@ platform :ios do
   lane :upload_build do |options|
 
     appcenter_upload(
-      api_token: options[:api_token],
-      owner_name: options[:owner_name],
-      app_name: options[:app_name],
+      api_token: appcenter_api_token,
+      owner_name: appcenter_owner,
+      app_name: appcenter_app_name,
       file: options[:build_name]+".ipa",
       dsym: options[:build_name]+".app.dSYM.zip",
       release_notes: options[:changelog],
@@ -112,29 +140,52 @@ platform :ios do
   desc "Lane to get changelog from Git commits"
   lane :changelog_git do
     last_tag = last_git_tag
-    changelog = ""
+
     if last_tag != nil
-      changelog = changelog_from_git_commits(
+      changelog_from_git_commits(
         between: [last_tag, "HEAD"]
       )
     else 
-      changelog = changelog_from_git_commits
+      last_commit = last_git_commit
+      changelog_from_git_commits(
+        commits_count: 1
+      )
     end
-    puts changelog
+
+    puts lane_context[SharedValues::FL_CHANGELOG]
   end
   ## ====== ##
 
   ## ====== ##
-  desc "Lane to demo updating version number of project"
-  lane :increment_version do
-    increment_version_number(
-      bump_type: "minor"        # Automatically increment minor version number
-    )
+  desc "Lane to publish notification on MS Teams"
+  lane :publish_on_teams do
+    
+    teams_facts = [
+      {
+        "name"=>"Build Name",
+        "value"=>options[:build_name]
+      },
+      {
+        "name"=>"Build Number",
+        "value"=>options[:build_number]
+      },
+      {
+        "name"=>"Date / Time",
+        "value"=>options[:date_time]
+      },
+      {
+        "name"=>"Download It Here",
+        "value"=>lane_context[SharedValues::APPCENTER_BUILD_INFORMATION]['install_url']
+      }
+    ]
+
+    teams(title: "New Build Available",
+          message: "New build is published on AppCenter. Please download it on device to start testing.",
+          facts: teams_facts,
+          teams_url: teams_webhook_url)
+
   end
   ## ====== ##
-
-
-
 
 end
 
