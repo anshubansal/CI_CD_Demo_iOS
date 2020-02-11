@@ -158,7 +158,7 @@ platform :ios do
 
   ## ====== ##
   desc "Lane to publish notification on MS Teams"
-  lane :publish_on_teams do
+  lane :publish_on_teams do |options|
     
     teams_facts = [
       {
