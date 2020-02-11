@@ -16,11 +16,31 @@ or alternatively using `brew cask install fastlane`
 
 # Available Actions
 ## iOS
-### ios custom_lane
+### ios beta
 ```
-fastlane ios custom_lane
+fastlane ios beta
 ```
-Description of what the lane does
+This lane build the application and publishes code on App Center
+### ios make_build
+```
+fastlane ios make_build
+```
+This lane will build application with the provided confiuration
+### ios upload_build
+```
+fastlane ios upload_build
+```
+This lane will upload build on AppCenter
+### ios changelog_git
+```
+fastlane ios changelog_git
+```
+Lane to get changelog from Git commits
+### ios increment_version
+```
+fastlane ios increment_version
+```
+Lane to demo updating version number of project
 
 ----
 

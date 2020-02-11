@@ -16,8 +16,125 @@
 default_platform(:ios)
 
 platform :ios do
-  desc "Description of what the lane does"
-  lane :custom_lane do
-    # add actions here: https://docs.fastlane.tools/actions
+
+  # Codesigning identity for the application
+  codesign_identity = "Apple Distribution: Gaurav Thakur (SYNZ9ZQLS2)" 
+
+  # AppCenter Attributes
+  appcenter_key = "31aaffe1-2c5b-44e7-8541-d97f670596dc"
+  appcenter_owner = "anshubansal-vwku"
+  appcenter_app_name = "CI-CD-Demo"
+  appcenter_api_token = "c4221d9ff4efc3ebfc467359af57a49d2185723e"
+
+  ## ====== ##
+  desc "This lane build the application and publishes code on App Center"
+  lane :beta do
+
+    # Update build number
+    updated_build_number = update_build_number
+    puts updated_build_number
+
+    # Get current system time and updated build name
+    current_time = Time.new.strftime('%Y.%m.%d_%H.%M')
+    build_name = "CI_CD_Demo_b_"+updated_build_number.to_s+"_"+current_time
+    puts build_name
+
+    # Build project adnd package IPA
+    build_app(
+      config: "Debug", 
+      build_name: build_name
+    )
+
+    # Pull changelog from 
+    last_tag = last_git_tag
+    changelog = ""
+    if last_tag != ""
+      changelog = changelog_from_git_commits(
+        between: [last_tag, "HEAD"]
+      )
+    else 
+      changelog = changelog_from_git_commits
+    end
+
   end
+  ## ====== ##
+
+  ## ====== ##
+  desc "This lane will update the build number of project"
+  private_lane :update_build_number do
+    increment_build_number
+  end
+  ## ====== ##
+
+  ## ====== ##
+  desc "This lane will build application with the provided confiuration"
+  lane :make_build do |options|
+
+    # Build app (If you are using Automaic Profile Management in Xcode then no need to add code-signing)
+    build_app(
+      scheme: "CI_CD_Demo",
+      workspace: "CI_CD_Demo.xcworkspace",    # Use only if building a workspace
+      clean: true,
+      configuration: options[:config],
+      include_bitcode: false,
+      codesigning_identity: codesign_identity,
+      export_method: "ad-hoc", 
+      output_name: options[:build_name]
+    )
+
+    puts lane_context[SharedValues::IPA_OUTPUT_PATH]
+    puts lane_context[SharedValues::PKG_OUTPUT_PATH]
+    puts lane_context[SharedValues::DSYM_OUTPUT_PATH]
+    puts lane_context[SharedValues::XCODEBUILD_ARCHIVE]
+  end
+  ## ====== ##
+
+  ## ====== ##
+  desc "This lane will upload build on AppCenter"
+  lane :upload_build do |options|
+
+    appcenter_upload(
+      api_token: options[:api_token],
+      owner_name: options[:owner_name],
+      app_name: options[:app_name],
+      file: options[:build_name]+".ipa",
+      dsym: options[:build_name]+".app.dSYM.zip",
+      release_notes: options[:changelog],
+      notify_testers: true
+    )
+
+    puts lane_context[SharedValues::APPCENTER_BUILD_INFORMATION]
+    puts lane_context[SharedValues::APPCENTER_DOWNLOAD_LINK]
+  end
+  ## ====== ##
+
+  ## ====== ##
+  desc "Lane to get changelog from Git commits"
+  lane :changelog_git do
+    last_tag = last_git_tag
+    changelog = ""
+    if last_tag != nil
+      changelog = changelog_from_git_commits(
+        between: [last_tag, "HEAD"]
+      )
+    else 
+      changelog = changelog_from_git_commits
+    end
+    puts changelog
+  end
+  ## ====== ##
+
+  ## ====== ##
+  desc "Lane to demo updating version number of project"
+  lane :increment_version do
+    increment_version_number(
+      bump_type: "minor"        # Automatically increment minor version number
+    )
+  end
+  ## ====== ##
+
+
+
+
 end
+
