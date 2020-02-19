@@ -41,6 +41,16 @@ Lane to get changelog from Git commits
 fastlane ios publish_on_teams
 ```
 Lane to publish notification on MS Teams
+### ios lint
+```
+fastlane ios lint
+```
+This lane will run SwiftLint on code
+### ios lint_correct
+```
+fastlane ios lint_correct
+```
+This lane will run SwiftLint on code with autocorrect mode
 
 ----
 

@@ -35,6 +35,15 @@ platform :ios do
     # Publish Mac Notification
     notification(subtitle: "Fastlane Job Started", message: "All Hail Build God!!")
 
+    # Publish Mac Notification
+    notification(subtitle: "Linting", message: "Running SwiftLint")
+
+    # Lint code
+    lint
+
+    # Publish Mac Notification
+    notification(subtitle: "Linting Done", message: "Building now...")
+
     # Update build number
     updated_build_number = update_build_number
     puts updated_build_number
@@ -191,6 +200,34 @@ platform :ios do
           message: "New build is published on AppCenter. Please download it on device to start testing.",
           facts: teams_facts,
           teams_url: teams_webhook_url)
+
+  end
+  ## ====== ##
+
+  ## ====== ##
+  desc "This lane will run SwiftLint on code"
+  lane :lint do |options|
+
+    # Run SwiftLint
+    swiftlint(
+      mode: :lint,      
+      output_file: "swiftlint.result.html", 
+      reporter: "html",
+      ignore_exit_status: true   
+    )
+
+  end
+  ## ====== ##
+
+  ## ====== ##
+  desc "This lane will run SwiftLint on code with autocorrect mode"
+  lane :lint_correct do |options|
+
+    # Run SwiftLint
+    swiftlint(
+      mode: :autocorrect,
+      format: true
+    )
 
   end
   ## ====== ##
