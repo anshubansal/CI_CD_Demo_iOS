@@ -11,7 +11,7 @@ import UIKit
 class ViewController: UIViewController {
 
     @IBOutlet var lblCaughtMe: UILabel!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
     }
@@ -21,4 +21,3 @@ class ViewController: UIViewController {
     }
 
 }
-

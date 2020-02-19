@@ -1,2 +1,4 @@
-# app_identifier "com.dd.CI-CD-Demo" # The bundle identifier of your app
-# apple_id "gauthakur@deloitte.com" # Your Apple email address
+app_identifier "com.dd.CI-CD-Demo" # The bundle identifier of your app
+apple_id "anshubansal@deloitte.com" # Your Apple email address
+itc_team_id "74957801"
+

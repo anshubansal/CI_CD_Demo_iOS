@@ -28,9 +28,15 @@ platform :ios do
   # Teams webhook URL
   teams_webhook_url = "https://outlook.office.com/webhook/f6022cdd-331f-4073-977c-0be051526fec@36da45f1-dd2c-4d1f-af13-5abe46b99921/IncomingWebhook/54e278d40b1b4d2cb1f9587194ed55b4/8a621c5c-e7d1-40ab-be8a-cf0a5a1d8494"
 
+  # before_all do
+  #   ENV["FASTLANE_DONT_STORE_PASSWORD"] = "1"
+  #   ENV["FASTLANE_PASSWORD"] = ""
+  # end
+
+
   ## ====== ##
   desc "This lane build the application and publishes code on App Center"
-  lane :beta do
+  lane :beta do |options|
 
     # Publish Mac Notification
     notification(subtitle: "Fastlane Job Started", message: "All Hail Build God!!")
@@ -150,6 +156,21 @@ platform :ios do
 
     puts lane_context[SharedValues::APPCENTER_BUILD_INFORMATION]
     puts lane_context[SharedValues::APPCENTER_DOWNLOAD_LINK]
+  end
+  ## ====== ##
+
+  ## ====== ##
+  desc "This lane will upload build on TestFlight"
+  lane :upload_build_testflight do |options|
+
+    pilot(
+      username: CredentialsManager::AppfileConfig.try_fetch_value(:apple_id),
+      app_identifier: CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier),
+      demo_account_required: false,
+      skip_waiting_for_build_processing: true,
+      notify_external_testers: false
+    )
+
   end
   ## ====== ##
 

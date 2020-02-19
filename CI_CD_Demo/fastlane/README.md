@@ -31,6 +31,11 @@ This lane will build application with the provided confiuration
 fastlane ios upload_build
 ```
 This lane will upload build on AppCenter
+### ios upload_build_testflight
+```
+fastlane ios upload_build_testflight
+```
+This lane will upload build on TestFlight
 ### ios changelog_git
 ```
 fastlane ios changelog_git

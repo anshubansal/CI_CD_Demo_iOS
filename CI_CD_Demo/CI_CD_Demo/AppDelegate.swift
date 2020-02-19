@@ -17,12 +17,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-        
-        MSAppCenter.start("31aaffe1-2c5b-44e7-8541-d97f670596dc", withServices:[
-          MSAnalytics.self,
-          MSCrashes.self
+
+        MSAppCenter.start("31aaffe1-2c5b-44e7-8541-d97f670596dc", withServices: [
+            MSAnalytics.self,
+            MSCrashes.self
         ])
-        
+
         return true
     }
 
@@ -40,7 +40,4 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
 
-    
-
 }
-
